@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avaliação de Conhecimentos · TI Administrativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1F24;
+    --ink-soft:#5A626C;
+    --ink-faint:#8A929C;
+    --paper:#EEF0F3;
+    --surface:#FFFFFF;
+    --grid:#DCE0E6;
+    --grid-strong:#C3C9D2;
+    --chrome:#1E2733;
+    --ok:#1A7F4B;
+    --ok-bg:#E7F4ED;
+    --no:#C23B3B;
+    --no-bg:#FBEAEA;
+    --sel:#2A6BE4;
+    --radius:3px;
+    --shadow:0 1px 0 var(--grid-strong), 0 10px 30px -18px rgba(20,30,45,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"Inter",system-ui,sans-serif;
+    color:var(--ink);
+    background:var(--paper);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:34px 34px;
+    background-position:-1px -1px;
+    line-height:1.5;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:clamp(16px,4vw,40px) clamp(14px,4vw,24px) 80px}
+
+  /* ---- chrome / name box ---- */
+  .sheet{
+    background:var(--surface);
+    border:1px solid var(--grid-strong);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .chrome{
+    display:flex;align-items:center;gap:12px;
+    background:var(--chrome);
+    color:#fff;
+    padding:11px 14px;
+    border-bottom:1px solid #000;
+  }
+  .namebox{
+    font-family:"JetBrains Mono",monospace;
+    font-size:12.5px;font-weight:700;letter-spacing:.04em;
+    background:#0E1620;color:#E8EDF3;
+    padding:5px 9px;border-radius:2px;
+    border:1px solid #38465A;
+    min-width:78px;text-align:center;
+    white-space:nowrap;
+  }
+  .chrome h1{
+    font-family:"Space Grotesk",sans-serif;
+    font-size:14px;font-weight:600;letter-spacing:.005em;
+    color:#EaeEF3;margin:0;flex:1;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .pct{
+    font-family:"JetBrains Mono",monospace;
+    font-size:12.5px;font-weight:700;color:#9FE3BD;
+    white-space:nowrap;
+  }
+
+  /* ---- progress cells ---- */
+  .cells{display:flex;gap:2px;padding:9px 14px;background:#F5F7F9;border-bottom:1px solid var(--grid)}
+  .cell{
+    flex:1;height:7px;background:#DEE3E9;border-radius:1px;
+    transition:background .35s ease;
+  }
+  .cell.done{background:var(--ok)}
+  .cell.cur{background:var(--sel);box-shadow:0 0 0 1px #fff,0 0 0 2px var(--sel)}
+
+  /* ---- body padding ---- */
+  .pad{padding:clamp(20px,4.5vw,38px)}
+
+  /* ================= INTRO ================= */
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:14px;
+  }
+  .intro h2{
+    font-family:"Space Grotesk",sans-serif;
+    font-size:clamp(27px,6vw,40px);font-weight:700;line-height:1.06;
+    letter-spacing:-.02em;margin-bottom:14px;
+  }
+  .intro h2 em{font-style:normal;color:var(--sel)}
+  .lead{font-size:15.5px;color:var(--ink-soft);max-width:48ch;margin-bottom:26px}
+  .topicgrid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:2px;border:1px solid var(--grid-strong);border-radius:var(--radius);
+    overflow:hidden;margin-bottom:28px;background:var(--grid-strong);
+  }
+  .tg{
+    background:var(--surface);padding:11px 12px;display:flex;align-items:center;gap:9px;
+    font-size:13px;font-weight:500;
+  }
+  .swatch{width:11px;height:11px;border-radius:2px;flex:none}
+  .startbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+  button.go{
+    font-family:"Space Grotesk",sans-serif;
+    font-size:15px;font-weight:600;color:#fff;background:var(--ink);
+    border:none;border-radius:var(--radius);padding:14px 26px;cursor:pointer;
+    transition:transform .12s ease, background .2s ease;
+  }
+  button.go:hover{background:#000;transform:translateY(-1px)}
+  button.go:active{transform:translateY(0)}
+  .meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-faint)}
+
+  /* ================= QUESTION ================= */
+  .qtop{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .badge{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;font-weight:700;letter-spacing:.04em;
+    color:#fff;padding:4px 9px;border-radius:2px;text-transform:uppercase;
+  }
+  .ref{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-faint);font-weight:500}
+  .qtext{
+    font-family:"Space Grotesk",sans-serif;
+    font-size:clamp(19px,4vw,24px);font-weight:600;line-height:1.28;
+    letter-spacing:-.01em;margin-bottom:22px;
+  }
+  .opts{display:flex;flex-direction:column;gap:9px}
+  .opt{
+    display:flex;align-items:flex-start;gap:13px;width:100%;text-align:left;
+    background:var(--surface);border:1px solid var(--grid-strong);border-radius:var(--radius);
+    padding:14px 15px;font-size:15px;font-family:inherit;color:var(--ink);cursor:pointer;
+    transition:border-color .15s ease,background .15s ease,transform .08s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--sel);background:#F7F9FE}
+  .opt:active:not(:disabled){transform:scale(.995)}
+  .opt:disabled{cursor:default}
+  .key{
+    font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;
+    width:24px;height:24px;flex:none;border-radius:3px;
+    display:grid;place-items:center;background:#EDF0F4;color:var(--ink-soft);
+    border:1px solid var(--grid-strong);margin-top:-1px;
+  }
+  .opt.correct{border-color:var(--ok);background:var(--ok-bg)}
+  .opt.correct .key{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .opt.wrong{border-color:var(--no);background:var(--no-bg)}
+  .opt.wrong .key{background:var(--no);color:#fff;border-color:var(--no)}
+  .opttext{flex:1;padding-top:1px}
+  .mark{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:14px;flex:none;margin-top:1px}
+  .opt.correct .mark{color:var(--ok)}
+  .opt.wrong .mark{color:var(--no)}
+
+  .explain{
+    margin-top:18px;border-left:3px solid var(--grid-strong);
+    padding:2px 0 2px 15px;font-size:14px;color:var(--ink-soft);
+    opacity:0;max-height:0;overflow:hidden;transition:opacity .3s ease;
+  }
+  .explain.show{opacity:1;max-height:300px}
+  .explain b{color:var(--ink);font-weight:600}
+  .verdict{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px}
+  .verdict.v-ok{color:var(--ok)} .verdict.v-no{color:var(--no)}
+
+  .qfoot{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px}
+  .runscore{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink-faint)}
+  button.next{
+    font-family:"Space Grotesk",sans-serif;font-size:14.5px;font-weight:600;
+    color:#fff;background:var(--sel);border:none;border-radius:var(--radius);
+    padding:12px 24px;cursor:pointer;transition:opacity .2s ease,transform .12s ease;
+  }
+  button.next:hover{transform:translateY(-1px)}
+  button.next[disabled]{opacity:.32;cursor:not-allowed;transform:none}
+
+  /* ================= RESULT ================= */
+  .result h2{font-family:"Space Grotesk",sans-serif;font-size:clamp(24px,5vw,34px);font-weight:700;letter-spacing:-.02em;margin-bottom:4px}
+  .scoreline{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:20px 0 6px}
+  .bignum{font-family:"JetBrains Mono",monospace;font-size:clamp(48px,12vw,72px);font-weight:700;line-height:.9;letter-spacing:-.03em}
+  .scoremeta{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--ink-soft)}
+  .level{
+    display:inline-block;font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14px;
+    padding:6px 13px;border-radius:2px;margin-top:6px;
+  }
+  .dashlabel{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin:34px 0 14px}
+  .bars{display:flex;flex-direction:column;gap:11px}
+  .barrow{display:grid;grid-template-columns:130px 1fr 42px;align-items:center;gap:12px}
+  .barlabel{font-size:12.5px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bartrack{height:18px;background:#E7EBF0;border-radius:2px;overflow:hidden;border:1px solid var(--grid)}
+  .barfill{height:100%;width:0;border-radius:1px;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .barval{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;color:var(--ink-soft);text-align:right}
+  .restart{margin-top:34px}
+
+  /* ---- diagnóstico / oferta ---- */
+  .diag{margin-top:38px;padding-top:30px;border-top:2px solid var(--grid-strong)}
+  .diag-head{
+    font-family:"Space Grotesk",sans-serif;font-size:clamp(20px,4.5vw,27px);
+    font-weight:700;letter-spacing:-.015em;margin-bottom:10px;
+  }
+  .diag-body{font-size:15px;color:var(--ink-soft);max-width:54ch;margin-bottom:8px}
+  .gaps{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 6px}
+  .gap{
+    font-family:"JetBrains Mono",monospace;font-size:11.5px;font-weight:700;
+    color:#fff;padding:5px 10px;border-radius:2px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .gap small{font-weight:500;opacity:.85}
+  .prods{display:flex;flex-direction:column;gap:13px;margin-top:24px}
+  .prod{
+    position:relative;background:var(--surface);border:1px solid var(--grid-strong);
+    border-radius:var(--radius);padding:18px 18px 18px 19px;display:flex;flex-direction:column;gap:4px;
+  }
+  .prod.featured{
+    border:1.5px solid var(--sel);background:#F7F9FE;
+    box-shadow:0 14px 34px -22px rgba(42,107,228,.55);
+  }
+  .prod .tag-rec{
+    position:absolute;top:-10px;left:17px;
+    font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:#fff;background:var(--sel);padding:3px 9px;border-radius:2px;
+  }
+  .prod-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .prod-name{font-family:"Space Grotesk",sans-serif;font-size:16.5px;font-weight:700;letter-spacing:-.01em}
+  .prod-price{font-family:"JetBrains Mono",monospace;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .prod-tag{font-size:13px;color:var(--sel);font-weight:600}
+  .prod.plain .prod-tag{color:var(--ink-soft)}
+  .prod-ideal{font-size:13.5px;color:var(--ink-soft);margin-top:3px}
+  .prod-ideal b{color:var(--ink);font-weight:600}
+  .prod-cta{
+    align-self:flex-start;margin-top:12px;font-family:"Space Grotesk",sans-serif;
+    font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;
+    color:#fff;background:var(--sel);border:none;border-radius:var(--radius);padding:10px 20px;
+    transition:transform .12s ease,filter .2s ease;display:inline-block;
+  }
+  .prod-cta:hover{transform:translateY(-1px);filter:brightness(1.06)}
+  .prod.plain .prod-cta{background:var(--ink)}
+  .prod-soon{margin-top:12px;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--ink-faint)}
+  .contato{
+    display:inline-flex;align-items:center;gap:9px;margin-top:22px;
+    font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:14.5px;text-decoration:none;
+    color:#0b6b3a;background:#E7F4ED;border:1px solid #BfE3CD;border-radius:var(--radius);padding:11px 18px;
+  }
+  .contato:hover{filter:brightness(.98)}
+  .disc{font-size:11.5px;color:var(--ink-faint);margin-top:20px;line-height:1.5}
+
+  /* ---- barra de evolução ---- */
+  .evo{margin-top:22px}
+  .evo-track{
+    position:relative;height:14px;border-radius:8px;overflow:visible;
+    background:linear-gradient(90deg,#FBEAEA 0%,#FBF3E0 50%,#E7F4ED 100%);
+    border:1px solid var(--grid);
+  }
+  .evo-fill{height:100%;border-radius:8px 0 0 8px;background:rgba(30,39,51,.07)}
+  .evo-marker{
+    position:absolute;top:50%;width:18px;height:18px;border-radius:50%;
+    background:var(--ink);border:3px solid #fff;transform:translate(-50%,-50%);
+    box-shadow:0 2px 8px rgba(20,30,45,.35);
+  }
+  .evo-labels{display:flex;justify-content:space-between;margin-top:8px}
+  .evo-labels span{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);font-weight:500}
+  .evo-labels span.on{color:var(--ink);font-weight:700}
+
+  /* ---- posição de mercado ---- */
+  .market{
+    margin-top:20px;background:#F0F4FF;border:1px solid #D5DFF7;border-radius:var(--radius);
+    padding:13px 15px;font-size:14px;color:var(--ink);line-height:1.4;
+  }
+  .market b{font-family:"JetBrains Mono",monospace;font-weight:700}
+  .market .est{display:block;font-size:11px;color:var(--ink-faint);margin-top:3px}
+
+  /* ---- consequência (gera desejo) ---- */
+  .consequence{
+    margin-top:16px;border-left:4px solid var(--sel);background:#F7F9FE;
+    padding:14px 16px;border-radius:0 var(--radius) var(--radius) 0;font-size:15px;color:var(--ink-soft);
+  }
+  .consequence .cons-h{display:block;font-family:"Space Grotesk",sans-serif;font-weight:700;color:var(--ink);margin-bottom:4px;font-size:15px}
+
+  /* ---- perfil / texto humano ---- */
+  .persona-text{font-size:15px;color:var(--ink-soft);line-height:1.55;max-width:58ch}
+
+  /* ---- o que te tirou pontos ---- */
+  .wronglist{display:flex;flex-wrap:wrap;gap:8px}
+  .wrongchip{
+    font-size:13px;font-weight:500;color:#8a2b2b;background:#FBEAEA;border:1px solid #F1C9C9;
+    padding:6px 11px;border-radius:2px;
+  }
+
+  /* ---- captura de e-mail ---- */
+  .gate{padding:6px 0}
+  .gate-h{font-family:"Space Grotesk",sans-serif;font-size:clamp(24px,5.5vw,34px);font-weight:700;letter-spacing:-.02em;margin-bottom:12px}
+  .perks{list-style:none;margin:6px 0 22px;padding:0;display:flex;flex-direction:column;gap:9px}
+  .perks li{position:relative;padding-left:26px;font-size:15px;color:var(--ink)}
+  .perks li::before{content:"✓";position:absolute;left:0;top:0;color:var(--ok);font-weight:700;font-family:"JetBrains Mono",monospace}
+  .gate-form{display:flex;gap:9px;flex-wrap:wrap}
+  .gate-form input{
+    flex:1;min-width:200px;font-family:inherit;font-size:15px;color:var(--ink);
+    background:var(--surface);border:1.5px solid var(--grid-strong);border-radius:var(--radius);padding:13px 14px;
+  }
+  .gate-form input:focus{outline:none;border-color:var(--sel)}
+  .gate-foot{display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap;min-height:20px}
+  .err{color:var(--no);font-size:13px;font-weight:600}
+  .skip{background:none;border:none;color:var(--ink-faint);font-family:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:0}
+  .skip:hover{color:var(--ink-soft)}
+  @media (max-width:520px){ .gate-form .go{width:100%} }
+  @media (max-width:520px){
+    .barrow{grid-template-columns:96px 1fr 38px;gap:8px}
+    .barlabel{font-size:11.5px}
+    .qfoot{flex-direction:column;align-items:stretch}
+    button.next{width:100%}
+    .runscore{text-align:center}
+  }
+  /* sheet tabs */
+  .tabs{display:flex;gap:0;background:#F5F7F9;border-top:1px solid var(--grid);padding:0 10px}
+  .tab{
+    font-family:"JetBrains Mono",monospace;font-size:11.5px;font-weight:500;
+    color:var(--ink-faint);padding:9px 14px;border-right:1px solid var(--grid);
+    border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--ink);background:var(--surface);border-bottom-color:var(--sel);font-weight:700}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  :focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sheet">
+    <div class="chrome">
+      <span class="namebox" id="namebox">PLAN1</span>
+      <h1>Você seria aprovado numa entrevista de TI?</h1>
+      <span class="pct" id="pct"></span>
+    </div>
+    <div class="cells" id="cells"></div>
+    <div class="pad" id="stage"></div>
+    <div class="tabs">
+      <span class="tab active" id="tab-q">Avaliação</span>
+      <span class="tab" id="tab-r">Diagnóstico</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS = {
+  win:     {name:"Windows",      color:"#2D5BA8"},
+  net:     {name:"Internet",     color:"#BE3A8C"},
+  excel:   {name:"Excel",        color:"#217346"},
+  plan:    {name:"Planilhas",    color:"#0E8A6B"},
+  office:  {name:"Pacote Office",color:"#5B5FC7"},
+  word:    {name:"Word",         color:"#2B579A"},
+  ppt:     {name:"PowerPoint",   color:"#C43E1C"},
+  outlook: {name:"Outlook",      color:"#0078D4"},
+  rel:     {name:"Relatórios",   color:"#7C3AED"},
+  org:     {name:"Organização",  color:"#475569"},
+  com:     {name:"Comunicação",  color:"#0891B2"},
+  bi:      {name:"Power BI",     color:"#B8860B"},
+  erp:     {name:"ERP",          color:"#B45309"},
+};
+
+/* ============================================================
+   >>> CONFIGURE AQUI SEUS PRODUTOS <<<
+   ============================================================ */
+
+/* E-BOOKS por tema. Cada um tem 'cobre': as categorias do teste
+   que ele atende. O diagnóstico recomenda o e-book do ponto fraco. */
+const EBOOKS = {
+  office:   {nome:"Pack do Office",            preco:"R$ 39,90", url:"https://pay.kiwify.com.br/jnOuze5", cobre:["office","word","ppt","outlook","excel","plan"]},
+  word:     {nome:"Word Básico",               preco:"R$ 19,90", url:"https://pay.kiwify.com.br/CKv3YRe", cobre:["word"]},
+  concurso: {nome:"Informática para Concurso", preco:"R$ 19,90", url:"https://pay.kiwify.com.br/TfqsJLX", cobre:["win","org","com"]},
+  internet: {nome:"Internet 2.0",              preco:"R$ 19,90", url:"https://kiwify.app/JGQZc4q",        cobre:["net"]},
+  erp:      {nome:"ERP",                       preco:"R$ 19,90", url:"https://pay.kiwify.com.br/Lpj5RPj", cobre:["erp"]},
+  excelia:  {nome:"Excel com IA",              preco:"R$ 19,90", url:"https://pay.kiwify.com.br/8ST9DMO", cobre:["excel","plan","bi","rel"]},
+};
+
+/* Qual e-book recomendar para cada assunto fraco do teste. */
+const CAT_EBOOK = {
+  win:"concurso", org:"concurso", com:"concurso",
+  net:"internet",
+  excel:"excelia", plan:"excelia", bi:"excelia", rel:"excelia",
+  word:"word",
+  office:"office", ppt:"office", outlook:"office",
+  erp:"erp",
+};
+
+/* PRODUTOS de acompanhamento (níveis acima do e-book).
+   Preencha a url de checkout quando tiver. url:"" oculta o botão. */
+const PRODUTOS = {
+  curso: {
+    nome:"Curso Gravado Completo de TI Administrativo",
+    tagline:"Aulas práticas, do Windows ao Power BI",
+    ideal_se:"você tem lacunas em vários temas e quer aprender com aulas passo a passo, no seu ritmo.",
+    preco:"R$ 297",
+    url:"",
+    cta:"Ver o curso"
+  },
+  mentoria: {
+    nome:"Mentoria de Preparação para Entrevistas",
+    tagline:"Acompanhamento e simulações com feedback",
+    ideal_se:"você já tem boa base e quer ajustes finos, simulados de entrevista e um plano direcionado.",
+    preco:"a partir de R$ 597",
+    url:"",
+    cta:"Quero a mentoria"
+  },
+  consultoria: {
+    nome:"Consultoria Individual Personalizada",
+    tagline:"Plano sob medida, 1 a 1, para se destacar",
+    ideal_se:"você quer um diagnóstico aprofundado e uma estratégia personalizada para conquistar (ou subir de) vaga.",
+    preco:"sob consulta",
+    url:"",
+    cta:"Falar sobre consultoria"
+  }
+};
+
+/* Contato/CTA final. Deixe "" para ocultar. */
+const CONTATO = {
+  whatsapp:"",              // ex.: "https://wa.me/55SEUNUMERO"
+  rotulo:"Falar no WhatsApp e tirar dúvidas"
+};
+
+/* CAPTURA DE E-MAIL (lead magnet) antes de mostrar o resultado.
+   - ativo:true  -> pede e-mail antes do diagnóstico
+   - endpoint    -> URL que recebe o lead via POST.
+                    Depois de publicar a API no Railway, troque pelo domínio real.
+   - permitir_pular -> mostra um link discreto "ver sem cadastrar". */
+const LEAD = {
+  ativo:true,
+  endpoint:"https://SEU_APP_RAILWAY.up.railway.app/lead",
+  permitir_pular:true
+};
+
+const Q = [
+  {c:"win", q:"No Windows, qual atalho copia um item selecionado?",
+   o:["Ctrl + C","Ctrl + V","Ctrl + X","Ctrl + P"], a:0,
+   e:"<b>Ctrl+C</b> copia e <b>Ctrl+V</b> cola. Ctrl+X recorta e Ctrl+Z desfaz a última ação."},
+  {c:"win", q:"Qual atalho alterna rapidamente entre as janelas e programas abertos?",
+   o:["Alt + Tab","Ctrl + Alt + Del","Alt + F4","Caps Lock"], a:0,
+   e:"<b>Alt+Tab</b> troca de janela. Alt+F4 fecha a janela ativa e Ctrl+Alt+Del abre opções do sistema."},
+  {c:"win", q:"Ao excluir um arquivo no Windows, para onde ele vai antes de ser apagado de vez?",
+   o:["Para a Lixeira","Direto para a nuvem","Para a pasta Downloads","Para a área de trabalho"], a:0,
+   e:"Vai para a <b>Lixeira</b>, de onde ainda pode ser restaurado — até que ela seja esvaziada."},
+  {c:"win", q:"Ao se levantar da mesa, qual atalho bloqueia o computador protegendo o acesso?",
+   o:["Windows + L","Windows + D","Ctrl + S","Alt + Tab"], a:0,
+   e:"<b>Windows+L</b> bloqueia a sessão imediatamente — boa prática de segurança ao deixar a estação."},
+  {c:"win", q:"No Windows, o Explorador de Arquivos serve principalmente para:",
+   o:["Navegar e organizar pastas e arquivos","Editar fotos","Enviar e-mails","Criar gráficos"], a:0,
+   e:"O <b>Explorador de Arquivos</b> mostra pastas e arquivos do computador, permitindo mover, copiar e organizar."},
+  {c:"net", q:"Qual destes é um navegador de internet?",
+   o:["Google Chrome","Microsoft Excel","Windows","Outlook"], a:0,
+   e:"<b>Chrome</b> (assim como Edge e Firefox) é um navegador, usado para acessar sites na web."},
+  {c:"net", q:"O cadeado e o \"https\" no início do endereço de um site indicam que a conexão é:",
+   o:["Segura e criptografada","Mais rápida","Gratuita","Off-line"], a:0,
+   e:"<b>https</b> + cadeado indicam conexão <b>criptografada</b> — importante ao informar senhas e dados pessoais."},
+  {c:"net", q:"Você recebe um e-mail inesperado pedindo sua senha por meio de um link estranho. O correto é:",
+   o:["Não clicar e desconfiar — pode ser golpe (phishing)","Clicar e digitar a senha rapidamente","Encaminhar para todos os colegas","Responder com a senha"], a:0,
+   e:"Isso é <b>phishing</b>. Empresas sérias não pedem senha por e-mail; não clique e avise a equipe de TI."},
+  {c:"net", q:"Serviços como OneDrive e Google Drive são exemplos de:",
+   o:["Armazenamento na nuvem","Editores de vídeo","Antivírus","Sistemas operacionais"], a:0,
+   e:"São <b>armazenamento na nuvem</b>: os arquivos ficam na internet e podem ser acessados de qualquer lugar."},
+  {c:"net", q:"O termo URL se refere a:",
+   o:["O endereço de um site, ex.: www.empresa.com","A velocidade da internet","Um tipo de vírus","Um programa de planilhas"], a:0,
+   e:"A <b>URL</b> é o endereço que você digita para acessar uma página na web."},
+  {c:"excel", q:"Toda fórmula no Excel deve começar com qual símbolo?",
+   o:["= (igual)","+ (mais)","# (cerquilha)","@ (arroba)"], a:0,
+   e:"Fórmulas começam com <b>=</b>. Sem o sinal de igual, o Excel trata o conteúdo como texto comum."},
+  {c:"excel", q:"Qual fórmula soma todos os valores do intervalo de A1 até A10?",
+   o:["=SOMA(A1:A10)","=MÉDIA(A1:A10)","=CONT.NÚM(A1:A10)","=A1+A10"], a:0,
+   e:"<b>=SOMA(A1:A10)</b> soma o intervalo inteiro. =A1+A10 somaria apenas as duas pontas."},
+  {c:"excel", q:"Para procurar um código numa tabela e retornar o valor correspondente, qual função é usada?",
+   o:["PROCV (VLOOKUP)","CONCATENAR","ARRUMAR","AGORA"], a:0,
+   e:"<b>PROCV</b> (ou PROCX, mais moderno) busca um valor numa coluna e devolve o dado correspondente de outra."},
+  {c:"plan", q:"Numa fórmula, o cifrão ($) antes da linha/coluna serve para:",
+   o:["Travar a referência ao copiar a fórmula","Formatar a célula como moeda","Transformar o número em texto","Somar com a célula acima"], a:0,
+   e:"$ cria uma <b>referência absoluta</b> (ex.: $A$1), que não muda quando você arrasta ou copia a fórmula."},
+  {c:"plan", q:"Qual recurso exibe somente as linhas que atendem a um critério, escondendo o resto?",
+   o:["Filtro","Mesclar células","Quebra de texto","Validação de dados"], a:0,
+   e:"O <b>Filtro</b> mostra apenas as linhas desejadas sem apagar nada — ideal para controles e listas grandes."},
+  {c:"plan", q:"Para manter o cabeçalho visível enquanto se rola uma planilha longa, usa-se:",
+   o:["Congelar Painéis","Classificar A→Z","Formatação condicional","Tabela dinâmica"], a:0,
+   e:"<b>Congelar Painéis</b> fixa as primeiras linhas/colunas na tela durante a rolagem."},
+  {c:"office", q:"Qual destes programas NÃO faz parte do pacote Microsoft Office?",
+   o:["Photoshop","Word","Excel","PowerPoint"], a:0,
+   e:"<b>Photoshop</b> é da Adobe. O Office reúne Word, Excel, PowerPoint, Outlook, entre outros."},
+  {c:"office", q:"Qual é a extensão padrão de um arquivo do Excel moderno?",
+   o:[".xlsx",".docx",".pptx",".pdf"], a:0,
+   e:"<b>.xlsx</b> é a planilha. .docx é Word, .pptx é PowerPoint e .pdf é um formato de leitura."},
+  {c:"word", q:"No Word em português, qual atalho de teclado aplica Negrito ao texto selecionado?",
+   o:["Ctrl + N","Ctrl + B","Ctrl + G","Ctrl + Shift + N"], a:0,
+   e:"No Office em PT-BR, <b>Ctrl+N</b> = Negrito (Ctrl+I = Itálico, Ctrl+S = Sublinhado)."},
+  {c:"word", q:"Para gerar um sumário automático no Word, o documento precisa antes ter:",
+   o:["Estilos de título aplicados (Título 1, Título 2…)","Todas as páginas numeradas à mão","O texto todo em negrito","Margens personalizadas"], a:0,
+   e:"O sumário automático lê os <b>Estilos de título</b>. Sem eles, o Word não sabe o que listar."},
+  {c:"word", q:"Ainda no Office em português, qual atalho salva o documento?",
+   o:["Ctrl + B","Ctrl + S","Ctrl + P","Ctrl + A"], a:0,
+   e:"Na versão PT-BR, <b>Ctrl+B</b> = Salvar. (Ctrl+S vira Sublinhado, e Ctrl+P imprime.)"},
+  {c:"ppt", q:"No PowerPoint, qual tecla inicia a apresentação a partir do primeiro slide?",
+   o:["F5","F2","Esc","Tab"], a:0,
+   e:"<b>F5</b> inicia do começo; Shift+F5 começa pelo slide atual; Esc encerra a apresentação."},
+  {c:"ppt", q:"Cada página/tela de uma apresentação do PowerPoint é chamada de:",
+   o:["Slide","Aba","Planilha","Seção"], a:0,
+   e:"Cada tela é um <b>slide</b>. O conjunto de slides forma a apresentação."},
+  {c:"outlook", q:"No e-mail, qual campo envia uma cópia SEM que os demais destinatários vejam o endereço?",
+   o:["Cco (cópia oculta)","Cc (cópia)","Para","Assunto"], a:0,
+   e:"<b>Cco</b> (cópia oculta / BCC) esconde o endereço dos demais. Cc é cópia visível a todos."},
+  {c:"outlook", q:"Clicar em \"Responder a todos\" envia a resposta para:",
+   o:["O remetente e todos os destinatários da mensagem","Somente quem enviou","Apenas você mesmo","Toda a lista de contatos da empresa"], a:0,
+   e:"<b>Responder a todos</b> inclui o remetente e todos em Para/Cc — use com cuidado para não lotar caixas alheias."},
+  {c:"rel", q:"A sigla KPI, muito usada em relatórios, significa:",
+   o:["Indicador-chave de desempenho","Plano interno de qualidade","Controle padrão de inventário","Índice de preços ao consumidor"], a:0,
+   e:"<b>KPI</b> = Key Performance Indicator, ou indicador-chave de desempenho — mede se uma meta está sendo atingida."},
+  {c:"rel", q:"Qual tipo de gráfico é o mais indicado para mostrar a evolução de vendas ao longo dos meses?",
+   o:["Gráfico de linhas","Gráfico de pizza","Gráfico de dispersão","Mapa de calor"], a:0,
+   e:"O <b>gráfico de linhas</b> evidencia tendência no tempo. Pizza serve para proporção de um total."},
+  {c:"org", q:"Qual é a melhor prática para nomear arquivos de forma organizada?",
+   o:["Usar padrão com data, ex.: 2025-03_Relatorio_Vendas","Usar nomes como 'final final2 ok.docx'","Evitar qualquer data no nome","Usar acentos e símbolos como * e ?"], a:0,
+   e:"Um padrão com <b>data AAAA-MM</b> e sem caracteres especiais mantém os arquivos ordenados e fáceis de achar."},
+  {c:"org", q:"A extensão de um arquivo (.docx, .pdf, .xlsx) indica principalmente:",
+   o:["O tipo/formato do arquivo e qual programa o abre","O tamanho do arquivo","A data de criação","Quem é o autor"], a:0,
+   e:"A <b>extensão</b> sinaliza o formato e o programa associado para abri-lo corretamente."},
+  {c:"com", q:"Em um e-mail corporativo, o campo \"Assunto\" deve ser:",
+   o:["Claro e objetivo, resumindo o conteúdo","Deixado em branco sempre","Escrito todo em letras maiúsculas","Igual ao corpo da mensagem inteiro"], a:0,
+   e:"Um <b>assunto claro</b> ajuda o destinatário a priorizar e localizar o e-mail depois."},
+  {c:"com", q:"Antes de enviar um e-mail importante, a atitude mais profissional é:",
+   o:["Revisar ortografia, anexos e destinatários","Enviar rápido e corrigir depois","Escrever em linguagem informal com gírias","Marcar tudo como urgente"], a:0,
+   e:"<b>Revisar</b> antes de enviar evita erros de português, anexo esquecido e e-mail para a pessoa errada."},
+  {c:"bi", q:"O Power BI é uma ferramenta usada principalmente para:",
+   o:["Criar relatórios e dashboards interativos a partir de dados","Editar fotos","Programar jogos","Gravar vídeos"], a:0,
+   e:"O <b>Power BI</b> transforma dados em painéis visuais e interativos para análise e tomada de decisão."},
+  {c:"bi", q:"O Power BI é desenvolvido por qual empresa?",
+   o:["Microsoft","Google","Adobe","Apple"], a:0,
+   e:"É um produto <b>Microsoft</b>, da mesma família do Excel — por isso a integração entre eles é forte."},
+  {c:"erp", q:"A sigla ERP corresponde a:",
+   o:["Planejamento de Recursos Empresariais (Enterprise Resource Planning)","Relatório Eletrônico de Produção","Registro de Entrada e Pagamento","Painel de Estatística Regional"], a:0,
+   e:"<b>ERP</b> = Enterprise Resource Planning: sistema que integra a gestão da empresa."},
+  {c:"erp", q:"Qual destes é um exemplo de sistema ERP usado por empresas?",
+   o:["SAP","Spotify","Google Chrome","WhatsApp"], a:0,
+   e:"<b>SAP</b> (e também TOTVS, Oracle) são ERPs. Os demais não gerenciam recursos empresariais."},
+  {c:"erp", q:"Qual é o principal benefício de um ERP para uma empresa?",
+   o:["Integrar setores e processos num único sistema","Substituir a internet","Editar imagens em alta resolução","Funcionar apenas no setor de RH"], a:0,
+   e:"O ERP <b>integra</b> finanças, estoque, vendas, compras etc., evitando dados espalhados e retrabalho."},
+  {c:"plan", q:"Cenário: seu chefe envia uma planilha com 50 mil linhas e pede o total de vendas por região até o fim do dia. O caminho mais rápido e confiável é:",
+   o:["Usar uma Tabela Dinâmica para resumir tudo automaticamente","Somar região por região manualmente","Conferir linha por linha e anotar","Apagar linhas até sobrar só uma região"], a:0,
+   e:"A <b>Tabela Dinâmica</b> resume milhares de linhas em segundos, agrupando por região sem risco de erro manual."},
+  {c:"excel", q:"Cenário: você tem uma lista de clientes e outra de pagamentos e precisa descobrir quem já pagou. A forma mais eficiente é:",
+   o:["Cruzar as duas listas com PROCV (ou PROCX)","Procurar nome por nome nas duas abas","Imprimir e conferir no papel","Reescrever tudo numa terceira planilha"], a:0,
+   e:"O <b>PROCV</b> cruza listas automaticamente: ele busca cada cliente na lista de pagamentos e traz o resultado."},
+  {c:"org", q:"Cenário: a equipe tem arquivos chamados \"relatorio final\", \"final2\" e \"final ok\". Para acabar com a confusão, o ideal é:",
+   o:["Adotar um padrão de nomes com data e versão","Continuar como está para não mexer","Apagar todos e recomeçar do zero","Renomear tudo como \"novo\""], a:0,
+   e:"Um <b>padrão de nomes</b> com data (ex.: 2025-03_Relatorio_v2) elimina ambiguidade e retrabalho na equipe."},
+];
+
+// ---------- state ----------
+let i = 0, score = 0, locked = false, curCorrect = 0;
+let wrongList = [];      // conceitos errados (rótulo)
+let leadEmail = "";      // e-mail capturado
+
+// extrai o primeiro termo em <b> da explicação como "conceito"
+function conceito(q){
+  const m=(q.e||'').match(/<b>(.*?)<\/b>/);
+  return m ? m[1].replace(/<[^>]+>/g,'') : CATS[q.c].name;
+}
+
+// Fisher–Yates shuffle (returns a new array)
+function shuffle(arr){
+  const a=arr.slice();
+  for(let j=a.length-1;j>0;j--){
+    const r=Math.floor(Math.random()*(j+1));
+    [a[j],a[r]]=[a[r],a[j]];
+  }
+  return a;
+}
+const perCat = {};
+Object.keys(CATS).forEach(k=>perCat[k]={right:0,total:0});
+Q.forEach(q=>perCat[q.c].total++);
+
+const stage = document.getElementById('stage');
+const cellsEl = document.getElementById('cells');
+const namebox = document.getElementById('namebox');
+const pctEl = document.getElementById('pct');
+const tabQ = document.getElementById('tab-q');
+const tabR = document.getElementById('tab-r');
+const KEYS = ['A','B','C','D'];
+
+function buildCells(){
+  cellsEl.innerHTML='';
+  for(let k=0;k<Q.length;k++){
+    const d=document.createElement('div');
+    d.className='cell';d.id='cell'+k;
+    cellsEl.appendChild(d);
+  }
+}
+function updateChrome(){
+  pctEl.textContent = Math.round((i/Q.length)*100)+'%';
+  for(let k=0;k<Q.length;k++){
+    const c=document.getElementById('cell'+k);
+    if(!c) continue;
+    c.className='cell'+(k<i?' done':k===i?' cur':'');
+  }
+}
+
+// ---------- intro ----------
+function intro(){
+  i=0;score=0;locked=false;wrongList=[];
+  Object.keys(perCat).forEach(k=>perCat[k].right=0);
+  namebox.textContent='PLAN1';
+  cellsEl.style.display='none';
+  pctEl.textContent='';
+  tabQ.classList.add('active');tabR.classList.remove('active');
+  const cards = Object.values(CATS).map(c=>
+    `<div class="tg"><span class="swatch" style="background:${c.color}"></span>${c.name}</div>`).join('');
+  stage.innerHTML = `
+    <div class="intro">
+      <div class="eyebrow">Diagnóstico gratuito · ${Q.length} perguntas · ~6 min</div>
+      <h2>Descubra seu <em>nível real de informática</em> para o mercado de trabalho</h2>
+      <p class="lead">Responda e receba um diagnóstico personalizado: onde você está forte, quais lacunas te tirariam pontos numa entrevista e um plano do que estudar. Cobre Windows, internet, Excel, Office, Power BI, relatórios e ERP — os conhecimentos mais cobrados em vagas administrativas.</p>
+      <div class="topicgrid">${cards}</div>
+      <div class="startbar">
+        <button class="go" id="startBtn">Descobrir meu nível →</button>
+        <span class="meta">grátis · resultado na hora · feito por quem contrata</span>
+      </div>
+    </div>`;
+  document.getElementById('startBtn').onclick=start;
+}
+
+function start(){
+  cellsEl.style.display='flex';
+  buildCells();
+  render();
+}
+
+// ---------- question ----------
+function render(){
+  locked=false;
+  const q=Q[i];const cat=CATS[q.c];
+  namebox.textContent='Q'+String(i+1).padStart(2,'0');
+  updateChrome();
+  // embaralha as alternativas e guarda qual posição ficou correta
+  const shuffled=shuffle(q.o.map((t,idx)=>({t,ok:idx===q.a})));
+  curCorrect=shuffled.findIndex(o=>o.ok);
+  const opts=shuffled.map((o,idx)=>`
+    <button class="opt" data-idx="${idx}">
+      <span class="key">${KEYS[idx]}</span>
+      <span class="opttext">${o.t}</span>
+      <span class="mark" data-mark></span>
+    </button>`).join('');
+  stage.innerHTML=`
+    <div class="qtop">
+      <span class="badge" style="background:${cat.color}">${cat.name}</span>
+      <span class="ref">questão ${i+1} de ${Q.length}</span>
+    </div>
+    <div class="qtext">${q.q}</div>
+    <div class="opts" id="opts">${opts}</div>
+    <div class="explain" id="explain"></div>
+    <div class="qfoot">
+      <span class="runscore" id="runscore">Acertos: ${score} / ${i}</span>
+      <button class="next" id="nextBtn" disabled>${i===Q.length-1?'Ver resultado →':'Próxima →'}</button>
+    </div>`;
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.idx));
+  document.getElementById('nextBtn').onclick=advance;
+}
+
+function choose(idx){
+  if(locked) return;
+  locked=true;
+  const q=Q[i];
+  const btns=[...document.querySelectorAll('.opt')];
+  btns.forEach(b=>b.disabled=true);
+  const correct = idx===curCorrect;
+  if(correct){score++;perCat[q.c].right++;}
+  else{ wrongList.push(conceito(q)); }
+  btns[curCorrect].classList.add('correct');
+  btns[curCorrect].querySelector('[data-mark]').textContent='✓';
+  if(!correct){
+    btns[idx].classList.add('wrong');
+    btns[idx].querySelector('[data-mark]').textContent='✗';
+  }
+  const ex=document.getElementById('explain');
+  ex.innerHTML=`<span class="verdict ${correct?'v-ok':'v-no'}">${correct?'Correto':'Resposta correta: '+KEYS[curCorrect]}</span>${q.e}`;
+  ex.classList.add('show');
+  document.getElementById('runscore').textContent=`Acertos: ${score} / ${i+1}`;
+  document.getElementById('nextBtn').disabled=false;
+}
+
+function advance(){
+  if(!locked) return;
+  i++;
+  if(i>=Q.length){ finishQuiz(); } else { render(); }
+}
+
+function finishQuiz(){
+  if(LEAD.ativo && !leadEmail){ emailGate(); }
+  else { result(); }
+}
+
+// ---------- captura de e-mail (lead magnet) ----------
+function emailGate(){
+  i=Q.length;updateChrome();pctEl.textContent='100%';
+  namebox.textContent='LEAD';
+  tabQ.classList.remove('active');tabR.classList.add('active');
+  const skip = LEAD.permitir_pular
+    ? `<button class="skip" id="skipBtn">ver resultado sem cadastrar</button>` : '';
+  stage.innerHTML=`
+    <div class="gate">
+      <div class="eyebrow">Diagnóstico pronto 🔒</div>
+      <h2 class="gate-h">Seu resultado está pronto</h2>
+      <p class="lead">Você acertou <b>${score} de ${Q.length}</b>. Informe seu e-mail para liberar o diagnóstico completo:</p>
+      <ul class="perks">
+        <li>Relatório completo por competência</li>
+        <li>Gabarito comentado das questões que você errou</li>
+        <li>Plano de estudos personalizado para as suas lacunas</li>
+      </ul>
+      <div class="gate-form">
+        <input type="email" id="leadInput" placeholder="seu melhor e-mail" autocomplete="email" inputmode="email" />
+        <button class="go" id="leadBtn">Liberar meu diagnóstico →</button>
+      </div>
+      <div class="gate-foot">
+        <span class="err" id="leadErr"></span>
+        ${skip}
+      </div>
+      <p class="disc">Sem spam. Você usa esse e-mail só para receber o material.</p>
+    </div>`;
+  const input=document.getElementById('leadInput');
+  input.focus();
+  document.getElementById('leadBtn').onclick=submitLead;
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')submitLead();});
+  if(LEAD.permitir_pular) document.getElementById('skipBtn').onclick=()=>result();
+}
+function submitLead(){
+  const input=document.getElementById('leadInput');
+  const err=document.getElementById('leadErr');
+  const v=(input.value||'').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ err.textContent='Digite um e-mail válido.'; input.focus(); return; }
+  leadEmail=v;
+  if(LEAD.endpoint){
+    try{
+      fetch(LEAD.endpoint,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:v,score,total:Q.length,pct:Math.round(score/Q.length*100),erros:[...new Set(wrongList)].slice(0,8),origem:window.location.href,userAgent:navigator.userAgent})
+      }).catch(()=>{});
+    }catch(e){}
+  }
+  result();
+}
+
+// ---------- result ----------
+function result(){
+  i=Q.length;updateChrome();
+  pctEl.textContent='100%';
+  namebox.textContent='DIAG';
+  tabQ.classList.remove('active');tabR.classList.add('active');
+  const pct=Math.round((score/Q.length)*100);
+
+  // nível / barra de evolução
+  let levelName, levelIdx, lvColor, lvBg;
+  if(pct<50){levelName='Iniciante';levelIdx=0;lvColor='#b03333';lvBg='#FBEAEA';}
+  else if(pct<80){levelName='Intermediário';levelIdx=1;lvColor='#9a6b00';lvBg='#FBF3E0';}
+  else{levelName='Profissional';levelIdx=2;lvColor='#0d6b3f';lvBg='#E7F4ED';}
+
+  // posição estimada de mercado (transparente: derivada da pontuação)
+  const percentil = Math.min(97, Math.max(5, Math.round(pct*0.9 + 6)));
+
+  // consequência de entrevista
+  let approval;
+  if(pct<50) approval='você provavelmente não passaria na etapa técnica — as lacunas apareceriam já nas primeiras perguntas.';
+  else if(pct<70) approval='você passaria na conversa inicial, mas perderia pontos na prova prática de Excel e Office.';
+  else if(pct<85) approval='você teria boas chances na triagem e se sairia bem na maior parte da prova prática.';
+  else approval='você estaria entre os candidatos mais fortes, com domínio inclusive da parte prática.';
+
+  // pontuação por competência
+  const COMP={
+    'Fundamentos digitais':['win','net','org'],
+    'Pacote Office':['office','word','ppt','outlook'],
+    'Excel & análise de dados':['excel','plan','bi','rel'],
+    'Comunicação & gestão':['com','erp'],
+  };
+  const REL={
+    'Excel & análise de dados':'Excel e análise de dados aparecem na maioria das vagas administrativas — é o que mais decide a aprovação.',
+    'Pacote Office':'Domínio do pacote Office é pré-requisito básico em praticamente toda vaga de escritório.',
+    'Fundamentos digitais':'Windows e internet são a base mínima esperada de qualquer candidato.',
+    'Comunicação & gestão':'Comunicação e noções de sistemas (ERP) pesam nas funções administrativas mais completas.',
+  };
+  const comps=Object.entries(COMP).map(([nome,ks])=>{
+    let r=0,t=0; ks.forEach(k=>{r+=perCat[k].right;t+=perCat[k].total;});
+    return {nome,pc:t?Math.round((r/t)*100):0};
+  });
+  const strong=[...comps].sort((a,b)=>b.pc-a.pc)[0];
+  const weakC =[...comps].sort((a,b)=>a.pc-b.pc)[0];
+  const humanText = strong.nome===weakC.nome
+    ? `Seu desempenho ficou equilibrado entre os temas, com média de ${pct}%. Há espaço para subir de nível em quase todas as áreas.`
+    : `Você se sai melhor em <b style="color:var(--ink)">${strong.nome}</b> (${strong.pc}%). Seu maior ponto a desenvolver é <b style="color:var(--ink)">${weakC.nome}</b> (${weakC.pc}%). ${REL[weakC.nome]}`;
+
+  // o que te tirou pontos
+  const errosUnique=[...new Set(wrongList)].slice(0,8);
+
+  // barras por assunto
+  const order=Object.keys(CATS);
+  const bars=order.map(k=>{
+    const p=perCat[k];const pc=p.total?Math.round((p.right/p.total)*100):0;
+    return `<div class="barrow">
+      <span class="barlabel">${CATS[k].name}</span>
+      <div class="bartrack"><div class="barfill" data-w="${pc}" style="background:${CATS[k].color}"></div></div>
+      <span class="barval">${p.right}/${p.total}</span>
+    </div>`;
+  }).join('');
+
+  // pontos fracos por categoria (para recomendar e-books)
+  const weak = order.map(k=>{
+      const p=perCat[k];const pc=p.total?Math.round((p.right/p.total)*100):100;
+      return {k,name:CATS[k].name,color:CATS[k].color,pc};
+    }).filter(x=>x.pc<70).sort((a,b)=>a.pc-b.pc);
+  const top = weak.slice(0,6);
+  const hits={};
+  top.forEach(g=>{
+    const ek=CAT_EBOOK[g.k]; if(!ek) return;
+    if(!hits[ek]) hits[ek]={key:ek,cats:[]};
+    hits[ek].cats.push(g.name);
+  });
+  let recEbooks=Object.values(hits);
+  if(hits['office'] && hits['word']) recEbooks=recEbooks.filter(r=>r.key!=='word');
+
+  const ebookCards = recEbooks.map((r,idx)=>{
+    const e=EBOOKS[r.key];
+    const cta = e.url
+      ? `<a class="prod-cta" href="${e.url}" target="_blank" rel="noopener">Comprar agora · ${e.preco} →</a>`
+      : `<div class="prod-soon">Link em breve.</div>`;
+    return `<div class="prod ${idx===0?'featured':'plain'}">
+      ${idx===0?'<span class="tag-rec">Comece por aqui</span>':''}
+      <div class="prod-top">
+        <span class="prod-name">📘 ${e.nome}</span>
+        <span class="prod-price">${e.preco}</span>
+      </div>
+      <span class="prod-tag">Reforça seu ponto fraco em ${r.cats.join(', ')}</span>
+      ${cta}
+    </div>`;
+  }).join('');
+
+  // acompanhamento conforme o nível
+  let primary, tierIntro;
+  if(pct<75){ primary='curso'; tierIntro='Quer aprender com aulas passo a passo, e não só por e-book?'; }
+  else if(pct<90){ primary='mentoria'; tierIntro='Para os ajustes finos e simular a entrevista de verdade:'; }
+  else{ primary='consultoria'; tierIntro='Para se destacar e mirar vagas melhores:'; }
+  const provKeys=Object.keys(PRODUTOS);
+  const ordered=[primary,...provKeys.filter(k=>k!==primary)];
+  const prodCards = ordered.map(k=>{
+    const p=PRODUTOS[k];const feat=k===primary;
+    const cta = p.url
+      ? `<a class="prod-cta" href="${p.url}" target="_blank" rel="noopener">${p.cta} →</a>`
+      : `<div class="prod-soon">Link em breve — configure a url deste produto.</div>`;
+    return `<div class="prod ${feat?'featured':'plain'}">
+      ${feat?'<span class="tag-rec">Recomendado para você</span>':''}
+      <div class="prod-top">
+        <span class="prod-name">${p.nome}</span>
+        <span class="prod-price">${p.preco}</span>
+      </div>
+      <span class="prod-tag">${p.tagline}</span>
+      <p class="prod-ideal">Ideal se ${p.ideal_se}</p>
+      ${cta}
+    </div>`;
+  }).join('');
+
+  const contatoHtml = CONTATO.whatsapp
+    ? `<a class="contato" href="${CONTATO.whatsapp}" target="_blank" rel="noopener">💬 ${CONTATO.rotulo}</a>`
+    : '';
+
+  const offerHead = top.length
+    ? 'Como fechar essas lacunas'
+    : 'Para evoluir ainda mais';
+  const offerLead = top.length
+    ? 'Selecionei os materiais que cobrem <b style="color:var(--ink)">exatamente</b> os seus pontos fracos. Comece pelo primeiro, que é o seu maior gargalo.'
+    : 'Você foi muito bem. Se quiser subir de patamar, estes são os próximos passos:';
+
+  stage.innerHTML=`
+    <div class="result">
+      <div class="eyebrow">Seu diagnóstico</div>
+      <h2>Seu resultado está pronto</h2>
+      <div class="scoreline">
+        <span class="bignum">${pct}<span style="font-size:.4em;color:var(--ink-faint)">%</span></span>
+        <span class="scoremeta">${score} de ${Q.length} corretas</span>
+      </div>
+      <span class="level" style="color:${lvColor};background:${lvBg}">Nível ${levelName}</span>
+
+      <div class="evo">
+        <div class="evo-track">
+          <div class="evo-fill" style="width:${pct}%"></div>
+          <div class="evo-marker" style="left:${pct}%"></div>
+        </div>
+        <div class="evo-labels">
+          <span class="${levelIdx===0?'on':''}">Iniciante</span>
+          <span class="${levelIdx===1?'on':''}">Intermediário</span>
+          <span class="${levelIdx===2?'on':''}">Profissional</span>
+        </div>
+      </div>
+
+      <div class="market">📊 Estimativa: você está à frente de cerca de <b>${percentil}%</b> dos candidatos
+        <span class="est">*estimativa com base na sua pontuação</span></div>
+
+      <div class="consequence">
+        <span class="cons-h">Se você fosse entrevistado hoje…</span>
+        ${approval}
+      </div>
+
+      <div class="dashlabel" style="margin-top:30px">Seu perfil</div>
+      <p class="persona-text">${humanText}</p>
+
+      ${ errosUnique.length ? `
+      <div class="dashlabel" style="margin-top:26px">O que te tirou pontos</div>
+      <div class="wronglist">${errosUnique.map(w=>`<span class="wrongchip">❌ ${w}</span>`).join('')}</div>
+      <p class="persona-text" style="margin-top:8px">Esses são justamente conceitos cobrados na prática. Vale revisá-los com prioridade.</p>` : '' }
+
+      <div class="dashlabel" style="margin-top:30px">Desempenho por assunto</div>
+      <div class="bars">${bars}</div>
+
+      <div class="diag">
+        <div class="diag-head">${offerHead}</div>
+        <p class="diag-body">${offerLead}</p>
+        ${ recEbooks.length ? `
+        <div class="dashlabel" style="margin-top:22px">E-books para os seus pontos fracos</div>
+        <div class="prods">${ebookCards}</div>` : '' }
+        <div class="dashlabel" style="margin-top:26px">${tierIntro}</div>
+        <div class="prods">${prodCards}</div>
+        ${contatoHtml}
+        <p class="disc">Recomendações geradas a partir do seu desempenho, para orientar os próximos passos de estudo. A posição de mercado é uma estimativa baseada na sua pontuação.</p>
+      </div>
+
+      <button class="go restart" id="againBtn">↺ Refazer o diagnóstico</button>
+    </div>`;
+  document.getElementById('againBtn').onclick=intro;
+  requestAnimationFrame(()=>{
+    setTimeout(()=>document.querySelectorAll('.barfill').forEach(b=>b.style.width=b.dataset.w+'%'),60);
+  });
+}
+
+// keyboard: 1-4 / A-D to answer, Enter to advance
+document.addEventListener('keydown',e=>{
+  if(i>=Q.length) return;
+  if(e.key==='Enter'){const n=document.getElementById('nextBtn');if(n&&!n.disabled)advance();return;}
+  const map={'1':0,'2':1,'3':2,'4':3,a:0,b:1,c:2,d:3};
+  const k=e.key.toLowerCase();
+  if(k in map && !locked){const b=document.querySelector(`.opt[data-idx="${map[k]}"]`);if(b)b.click();}
+});
+
+intro();
+</script>
+</body>
+</html>
