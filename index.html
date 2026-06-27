@@ -324,6 +324,17 @@
     border-bottom:2px solid transparent;
   }
   .tab.active{color:var(--ink);background:var(--surface);border-bottom-color:var(--sel);font-weight:700}
+  .brand-footer{
+    border-top:1px solid var(--grid);
+    background:#F5F7F9;
+    padding:14px 18px 16px;
+    text-align:center;
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    line-height:1.5;
+    color:var(--ink-faint);
+  }
+  .brand-footer strong{color:var(--ink-soft);font-weight:700}
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
   :focus-visible{outline:2px solid var(--sel);outline-offset:2px}
 </style>
@@ -343,6 +354,10 @@
       <span class="tab" id="tab-r">Diagnóstico</span>
     </div>
   </div>
+  <footer class="brand-footer">
+    <div>© 2026 <strong>@albertobri7o</strong></div>
+    <div>Todos os direitos reservados.</div>
+  </footer>
 </div>
 
 <script>
@@ -424,13 +439,13 @@ const CONTATO = {
 
 /* CAPTURA DE E-MAIL (lead magnet) antes de mostrar o resultado.
    - ativo:true  -> pede e-mail antes do diagnóstico
-   - endpoint    -> URL que recebe o lead via POST.
-                    Depois de publicar a API no Railway, troque pelo domínio real.
+   - endpoint    -> URL que recebe o lead via POST (ex.: Formspree,
+                    Tally webhook, n8n, Make, ConvertKit etc.)
    - permitir_pular -> mostra um link discreto "ver sem cadastrar". */
 const LEAD = {
   ativo:true,
-  endpoint:"https://SEU_APP_RAILWAY.up.railway.app/lead",
-  permitir_pular:true
+  endpoint:"https://diagnostico-ti-api-production.up.railway.app/lead",
+  permitir_pular:true       // mostra um link discreto "ver sem cadastrar"
 };
 
 const Q = [
